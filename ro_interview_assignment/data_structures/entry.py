@@ -14,3 +14,8 @@ class Entry:
         self.address = address
         self.available = available
         self.last_used = last_used
+
+    def __iter__(self):
+        yield self.address
+        yield self.available
+        yield self.last_used
