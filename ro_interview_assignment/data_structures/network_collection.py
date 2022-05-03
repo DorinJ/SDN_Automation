@@ -50,6 +50,33 @@ class NetworkCollection:
         """
         Sorts the list of associated entries in ascending order.
         DO NOT change this method, make the changes in entry.py :)
+
         """
 
-        self.entries = sorted(self.entries)
+        # self.entries = sorted(self.entries)
+
+        # -------------------------------------------------------------------------------------------------------------
+
+        # To be discussed..
+        # This method needs to be improved..
+        # Working here to avoid circular imports..
+        # self.entries vs. self.raw_entry_list ..
+
+        ips = []
+
+        for entry in self.raw_entry_list:
+            ips.append(entry.address)
+
+        ips = sorted(ips, key=lambda ip: [int(ip) for ip in ip.split(".")])
+
+        sorted_entries = {}
+
+        for entry in self.raw_entry_list:
+            ip = entry.address
+            index = ips.index(ip)
+            sorted_entries[index] = entry
+
+        self.raw_entry_list = \
+            [sorted_entries[key] if key in sorted_entries.keys() else 0 for key in range(len(sorted_entries))]
+
+        # -------------------------------------------------------------------------------------------------------------
