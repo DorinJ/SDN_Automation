@@ -1,5 +1,8 @@
+import datetime
+
+
 class Entry:
-    def __init__(self, address, available, last_used):
+    def __init__(self, address: str, available: bool, last_used: datetime.datetime):
         """
         Constructor for Entry data structure.
 
@@ -8,4 +11,6 @@ class Entry:
         self.last_used -> datetime
         """
 
-        pass
+        self.address = address
+        self.available = available
+        self.last_used = last_used
