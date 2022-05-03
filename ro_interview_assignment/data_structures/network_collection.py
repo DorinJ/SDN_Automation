@@ -28,9 +28,7 @@ class NetworkCollection:
         for entry in raw_entry_list:
             try:
                 ip = ipaddress.ip_address(entry["address"])
-                if ip in ipv4_network:
-                    pass
-                else:
+                if not (ip in ipv4_network):
                     raise Exception
             except Exception as e:
                 bad_ip_entry.append(index)
