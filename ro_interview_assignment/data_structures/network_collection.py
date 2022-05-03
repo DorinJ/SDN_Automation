@@ -1,5 +1,8 @@
+import ipaddress
+
+
 class NetworkCollection:
-    def __init__(self, ipv4_network, raw_entry_list):
+    def __init__(self, ipv4_network: ipaddress.IPv4Network, raw_entry_list: list):
         """
         Constructor for NetworkCollection data structure.
 
@@ -7,7 +10,8 @@ class NetworkCollection:
         self.entries -> list(Entry)
         """
 
-        pass
+        self.ipv4_network = ipv4_network
+        self.raw_entry_list = raw_entry_list
 
     def remove_invalid_records(self):
         """
