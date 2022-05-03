@@ -1,8 +1,11 @@
 import ipaddress
 
 
+from ro_interview_assignment.data_structures.entry import Entry
+
+
 class NetworkCollection:
-    def __init__(self, ipv4_network: ipaddress.IPv4Network, raw_entry_list: list):
+    def __init__(self, ipv4_network: ipaddress.IPv4Network, raw_entry_list: Entry):
         """
         Constructor for NetworkCollection data structure.
 
@@ -27,7 +30,7 @@ class NetworkCollection:
         index = 0
         for entry in raw_entry_list:
             try:
-                ip = ipaddress.ip_address(entry["address"])
+                ip = ipaddress.ip_address(entry.address)
                 if not (ip in ipv4_network):
                     raise Exception
             except Exception as e:
