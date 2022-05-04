@@ -2,11 +2,13 @@ import requests
 import ipaddress
 import json
 import time
+import datetime
 
 
 from data_structures.datacenter import Datacenter
 from data_structures.entry import Entry
 from data_structures.network_collection import NetworkCollection
+from data_structures.cluster import Cluster
 
 
 URL = "http://www.mocky.io/v2/5e539b332e00007c002dacbe"
@@ -44,6 +46,60 @@ def get_data(url, max_retries=5, delay_between_retries=1):
             time.sleep(delay_between_retries)
 
 
+def parse_mocky(data):
+
+    def parse_entry(address: str, available: str, last_used: str):
+        address = address
+        available = bool(available)
+        last_used = datetime.datetime.strptime(last_used, "%d/%m/%y %H:%M:%S")
+
+        entry = Entry(address, available, last_used)
+
+        return entry
+
+    datacenters_data = []
+
+    datacenters_location = list(data.keys())
+
+    for datacenter in datacenters_location:
+        datacenter_name = datacenter
+        datacenter_clusters = data[datacenter_name]
+
+        network_clusters = []
+
+        for cluster in datacenter_clusters:
+            cluster_name = cluster
+            cluster_networks = datacenter_clusters[cluster]["networks"]
+            cluster_security = datacenter_clusters[cluster]["security_level"]
+
+            network_collections = []
+
+            # append network collections
+            for network in cluster_networks:
+                network_address = network
+                network_entries = cluster_networks[network_address]
+                network_entries_ = []
+
+                # append network entries
+                for network_entry in network_entries:
+                    address = network_entry["address"]
+                    available = network_entry["available"]
+                    last_used = network_entry["last_used"]
+
+                    entry = parse_entry(address, available, last_used)
+                    network_entries_.append(entry)
+
+                network_collection = NetworkCollection(ipaddress.ip_network(network_address), network_entries_)
+                network_collections.append(network_collection)
+
+            cluster = Cluster(cluster_name, network_collections, cluster_security)
+            network_clusters.append(cluster)
+
+        datacenters_data.append(Datacenter(datacenter_name, network_clusters))
+
+    return datacenters_data
+
+
 def main():
     """
     Main entry to our program.
@@ -54,33 +110,23 @@ def main():
     if not data:
         raise ValueError('No data to process')
 
-    datacenters = [
-        Datacenter(key, value)
-        for key, value in data.items()
-    ]
+    datacenters = parse_mocky(data)
 
     # remove invalid clusters from datacenters
     for datacenter in datacenters:
         datacenter.remove_invalid_clusters()
 
-    # create network collections
-    network_collections = []
+    # remove invalid records from cluster's networks
     for datacenter in datacenters:
         for cluster in datacenter.clusters:
-            networks_from_cluster = datacenter.clusters[cluster]["networks"]
-            for network in networks_from_cluster:
-                entry_list = []
-                for entry in networks_from_cluster[network]:
-                    entry_list.append(Entry(entry["address"], entry["available"], entry["last_used"]))
-                network_collections.append(NetworkCollection(network, entry_list))
+            for network in cluster.networks:
+                network.remove_invalid_records()
 
-    # remove invalid records from network_collections
-    for network in network_collections:
-        network.remove_invalid_records()
-
-    # sort records from network_collections
-    for network in network_collections:
-        network.sort_records()
+    # sort records in cluster's networks
+    for datacenter in datacenters:
+        for cluster in datacenter.clusters:
+            for network in cluster.networks:
+                network.sort_records()
 
 
 if __name__ == '__main__':

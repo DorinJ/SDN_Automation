@@ -20,15 +20,16 @@ class Datacenter:
         Removes invalid objects from the clusters list.
         """
 
-        bad_names = []
+        bad_name_indexes = []
 
         # mark bad names
+        i = 0
         for cluster in self.clusters:
             try:
-                cluster_name = str(cluster).split("-")
+                cluster_name = str(cluster.name).split("-")
                 if len(cluster_name) == 2:
                     pattern = r'[A-Z]'
-                    if re.match(pattern, cluster_name[0]) and len(cluster_name[0]) == 3:
+                    if re.match(pattern, cluster_name[0]) and len(cluster_name[0]) == 3 and self.name[:3].upper() == cluster_name[0].upper():
                         pass
                     else:
                         raise Exception
@@ -40,8 +41,14 @@ class Datacenter:
                 else:
                     raise Exception
             except Exception as e:
-                bad_names.append(cluster)
+                bad_name_indexes.append(i)
+            i = i + 1
 
-        # delete clusters indicated by bad_names list
-        for key in bad_names:
-            del self.clusters[key]
+        # delete clusters indicated by bad_name_indexes list
+        while len(bad_name_indexes) > 0:
+            del self.clusters[bad_name_indexes[0]]
+            del bad_name_indexes[0]
+            i = 0
+            for x in bad_name_indexes:
+                bad_name_indexes[i] = x - 1
+                i = i + 1
